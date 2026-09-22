@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>母鸡 collectors - Hen Collector Game</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game-canvas" width="800" height="600"></canvas>
+
+      <!-- 菜单覆盖层 -->
+      <div id="overlay" class="overlay">
+        <div id="menu-screen" class="screen menu-screen">
+          <img class="menu-bg" src="/title/background.png" alt="" />
+          <img class="home-banner" src="/title/首页.png" alt="首页" />
+          <div class="role-select hidden">
+            <div class="role-label">选择角色</div>
+            <div class="role-options">
+              <button class="role-img-btn active" data-role="hen">
+                <img src="/role/母鸡.png" alt="母鸡" />
+                <span>母鸡</span>
+              </button>
+              <button class="role-img-btn" data-role="eagle">
+                <img src="/role/老鹰.png" alt="老鹰" />
+                <span>老鹰</span>
+              </button>
+            </div>
+          </div>
+          <div class="menu-buttons">
+            <button id="start-btn" class="img-btn">
+              <img src="/title/开始游戏.png" alt="开始游戏" />
+            </button>
+            <button id="menu-leaderboard-btn" class="img-btn">
+              <img src="/title/查看榜单.png" alt="查看榜单" />
+            </button>
+          </div>
+        </div>
+
+        <!-- 精灵替换面板 -->
+        <div id="sprite-screen" class="screen hidden">
+          <h2 class="title">🎨 替换素材</h2>
+          <p class="subtitle">支持 GIF / PNG / JPG，建议正方形图片</p>
+          <div class="sprite-grid">
+            <div class="sprite-item">
+              <div class="sprite-preview" id="preview-hen">
+                <span class="sprite-placeholder">🐔</span>
+              </div>
+              <div class="sprite-label">母鸡</div>
+              <input type="file" id="file-hen" accept="image/*" hidden />
+              <button class="btn small" data-target="hen">选择图片</button>
+              <button class="btn small ghost" data-reset="hen">重置</button>
+            </div>
+            <div class="sprite-item">
+              <div class="sprite-preview" id="preview-chick">
+                <span class="sprite-placeholder">🐤</span>
+              </div>
+              <div class="sprite-label">小鸡</div>
+              <input type="file" id="file-chick" accept="image/*" hidden />
+              <button class="btn small" data-target="chick">选择图片</button>
+              <button class="btn small ghost" data-reset="chick">重置</button>
+            </div>
+            <div class="sprite-item">
+              <div class="sprite-preview" id="preview-eagle">
+                <span class="sprite-placeholder">🦅</span>
+              </div>
+              <div class="sprite-label">老鹰</div>
+              <input type="file" id="file-eagle" accept="image/*" hidden />
+              <button class="btn small" data-target="eagle">选择图片</button>
+              <button class="btn small ghost" data-reset="eagle">重置</button>
+            </div>
+          </div>
+          <div class="sprite-actions">
+            <button id="sprite-reset-all-btn" class="btn">全部重置</button>
+            <button id="sprite-back-btn" class="btn primary">完成</button>
+          </div>
+          <p class="sprite-hint">图片将保存到浏览器，刷新后仍生效</p>
+        </div>
+
+        <!-- 音效设置面板 -->
+        <div id="audio-screen" class="screen hidden">
+          <h2 class="title">🎵 音效设置</h2>
+          <p class="subtitle">支持 MP3 / WAV / OGG，自定义你的游戏音效</p>
+
+          <div class="audio-volumes">
+            <div class="volume-row">
+              <label class="volume-label">背景音乐</label>
+              <input type="range" id="bgm-volume" class="volume-slider" min="0" max="1" step="0.05" value="0.4" />
+              <span id="bgm-volume-val" class="volume-val">40%</span>
+            </div>
+            <div class="volume-row">
+              <label class="volume-label">音效</label>
+              <input type="range" id="sfx-volume" class="volume-slider" min="0" max="1" step="0.05" value="0.6" />
+              <span id="sfx-volume-val" class="volume-val">60%</span>
+            </div>
+          </div>
+
+          <button id="audio-mute-btn" class="btn small">🔊 静音</button>
+
+          <div class="audio-grid">
+            <div class="audio-item">
+              <div class="audio-icon">🎶</div>
+              <div class="audio-label">背景音乐</div>
+              <div class="audio-status" id="status-bgm">默认</div>
+              <input type="file" id="file-bgm" accept="audio/*" hidden />
+              <div class="audio-buttons">
+                <button class="btn small" data-target="bgm">选择音频</button>
+                <button class="btn small ghost" data-reset="bgm">重置</button>
+                <button class="btn small ghost" data-preview="bgm">试听</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="audio-sfx-section">
+            <div class="audio-sfx-title">音效列表</div>
+            <div class="audio-sfx-grid" id="audio-sfx-grid"></div>
+          </div>
+
+          <div class="sprite-actions">
+            <button id="audio-reset-all-btn" class="btn">全部重置</button>
+            <button id="audio-back-btn" class="btn primary">完成</button>
+          </div>
+          <p class="sprite-hint">音频将保存到浏览器，刷新后仍生效</p>
+        </div>
+
+        <!-- 结束画面 -->
+        <div id="end-screen" class="screen hidden">
+          <h2 id="end-title" class="title">游戏结束</h2>
+          <p id="end-time" class="subtitle">用时: 00:00</p>
+          <div class="name-input-row">
+            <input id="player-name" type="text" maxlength="12" placeholder="输入你的名字" />
+            <button id="save-score-btn" class="btn primary">保存成绩</button>
+          </div>
+          <p id="save-status" class="save-status"></p>
+          <div class="end-buttons">
+            <button id="end-leaderboard-btn" class="btn">查看榜单</button>
+            <button id="restart-btn" class="btn">再来一局</button>
+            <button id="back-menu-btn" class="btn">返回菜单</button>
+          </div>
+        </div>
+
+        <!-- 榜单画面 -->
+        <div id="leaderboard-screen" class="screen hidden">
+          <h2 class="title">🏆 计时榜单</h2>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+          <button id="leaderboard-back-btn" class="btn">返回</button>
+        </div>
+
+        <!-- 游戏内暂停菜单 -->
+        <div id="pause-screen" class="screen hidden pause-screen">
+          <h2 class="title">游戏暂停</h2>
+          <div class="pause-buttons">
+            <button id="pause-exit-btn" class="img-btn">
+              <img src="/title/退出游戏.png" alt="退出游戏" />
+            </button>
+            <button id="pause-restart-btn" class="img-btn">
+              <img src="/title/重新开始.png" alt="重新开始" />
+            </button>
+          </div>
+          <p class="pause-hint">按 ESC 键继续游戏</p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
