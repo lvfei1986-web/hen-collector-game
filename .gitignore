@@ -3,3 +3,4 @@ dist
 .vite
 *.log
 server/data/leaderboard.json
+.vibehub/*.png
